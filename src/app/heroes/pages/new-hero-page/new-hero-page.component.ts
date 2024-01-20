@@ -6,32 +6,44 @@ import { HeroesService } from '../../services/heroes.service';
 @Component({
   selector: 'app-new-hero-page',
   templateUrl: './new-hero-page.component.html',
-  styles: ``
+  styles: ``,
 })
 export class NewHeroPageComponent {
   public heroForm = new FormGroup({
     id: new FormControl<string>(''),
-    superhero: new FormControl<string>('', { nonNullable: true } ),
-    publisher: new FormControl<Publisher>( Publisher.DCComics ),
+    superhero: new FormControl<string>('', { nonNullable: true }),
+    publisher: new FormControl<Publisher>(Publisher.DCComics),
     alter_ego: new FormControl<string>(''),
     first_appearance: new FormControl<string>(''),
     characters: new FormControl<string>(''),
-    alt_img:  new FormControl<string>(''),
-  })
+    alt_img: new FormControl<string>(''),
+  });
 
   public publishers = [
-    { id: 'DC Comics', desc: 'DC - Comics'},
-    { id: 'Marvel Comics', desc: 'Marvel - Comics'},
+    { id: 'DC Comics', desc: 'DC - Comics' },
+    { id: 'Marvel Comics', desc: 'Marvel - Comics' },
   ];
 
-  constructor(private heroesService: HeroesService) { }
+  constructor(private heroesService: HeroesService) {}
 
   get currentHero(): Hero {
     const hero = this.heroForm.value as Hero;
     return hero;
   }
 
-  onSubmit():void {
-    if ( this.heroForm.invalid ) return;
+  onSubmit(): void {
+    if (this.heroForm.invalid) return;
+
+    if (this.currentHero.id) {
+      this.heroesService.updateHero(this.currentHero).subscribe((hero) => {
+        // TODO mostrar snackbar
+      });
+
+      return;
+    }
+
+    this.heroesService.addHero(this.currentHero).subscribe((hero) => {
+      // TODO mostrar snackbar y navegar a /heroes/edit/hero.id
+    });
   }
 }
