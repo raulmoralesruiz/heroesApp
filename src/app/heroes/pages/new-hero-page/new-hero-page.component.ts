@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { filter, switchMap, tap } from 'rxjs';
 
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 
-import { switchMap } from 'rxjs';
 import { Hero, Publisher } from '../../interfaces/hero.interface';
 import { HeroesService } from '../../services/heroes.service';
 
@@ -80,12 +80,18 @@ export class NewHeroPageComponent implements OnInit {
       data: this.heroForm.value,
     });
 
-    dialogRef.afterClosed().subscribe(result => {
-      if ( !result ) return;
-
-      this.heroesService.deleteHeroById( this.currentHero.id );
-      this.router.navigateByUrl('/heroes');
-    });
+    dialogRef.afterClosed()
+      .pipe(
+        // filtramos el resultado positivo
+        filter( (result: boolean) => result ),
+        // si es positivo realizamos la eliminación
+        switchMap( () => this.heroesService.deleteHeroById( this.currentHero.id ) ),
+        // si realizamos la eliminación lo dejamos pasar
+        filter( (wasDeleted: boolean) => wasDeleted ),
+      )
+      .subscribe( () => {
+        this.router.navigateByUrl('/heroes');
+    })
   }
 
   showSnackbar( message: string ): void {
